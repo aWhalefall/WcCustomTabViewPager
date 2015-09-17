@@ -1125,7 +1125,6 @@ public abstract class PullToRefreshBase<T extends View> extends LinearLayout imp
 				mRefreshableView.setBackgroundDrawable(background);
 			}
 		}
-
 		if (a.hasValue(R.styleable.PullToRefresh_ptrOverScroll)) {
 			mOverScrollEnabled = a.getBoolean(R.styleable.PullToRefresh_ptrOverScroll, true);
 		}

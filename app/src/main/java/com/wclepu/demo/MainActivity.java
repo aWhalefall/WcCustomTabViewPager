@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.nineoldandroids.view.ViewHelper;
 import com.wclepu.demo.adapter.SlidingPagerAdapter;
@@ -24,6 +25,7 @@ public class MainActivity extends FragmentActivity implements OnPageChangeListen
     private LinearLayout header;
     private int headerHeight;
     private int headerTranslationDis;
+    private RelativeLayout relativeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +41,7 @@ public class MainActivity extends FragmentActivity implements OnPageChangeListen
         tabs = (PagerSlidingTabStrip) findViewById(R.id.show_tabs);
         viewPager = (ViewPager) findViewById(R.id.pager);
         header = (LinearLayout) findViewById(R.id.header);
+        relativeLayout = (RelativeLayout) findViewById(R.id.title);
     }
 
     private void getHeaderHeight() {
@@ -48,7 +51,7 @@ public class MainActivity extends FragmentActivity implements OnPageChangeListen
 
     private void setupPager() {
         adapter = new SlidingPagerAdapter(getSupportFragmentManager(), this, viewPager);
-        adapter.setTabHolderScrollingListener(this);//����ҳ���ϻ�
+        adapter.setTabHolderScrollingListener(this);
         viewPager.setOffscreenPageLimit(adapter.getCacheCount());
         viewPager.setAdapter(adapter);
         viewPager.setOnPageChangeListener(this);
@@ -61,7 +64,6 @@ public class MainActivity extends FragmentActivity implements OnPageChangeListen
         tabs.setCheckedTextColorResource(R.color.color_purple_bd6aff);
         tabs.setViewPager(viewPager);
     }
-
     @Override
     public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
         tabs.onPageScrolled(position, positionOffset, positionOffsetPixels);
@@ -74,9 +76,9 @@ public class MainActivity extends FragmentActivity implements OnPageChangeListen
         SparseArrayCompat<ScrollTabHolder> scrollTabHolders = adapter.getScrollTabHolders();
         ScrollTabHolder currentHolder = scrollTabHolders.valueAt(position);
         if (NEED_RELAYOUT) {
-            currentHolder.adjustScroll((int) (header.getHeight() + headerTop));// ��������ȥ��ƫ����
+            currentHolder.adjustScroll((int) (header.getHeight() + headerTop));
         } else {
-            currentHolder.adjustScroll((int) (header.getHeight() + ViewHelper.getTranslationY(header)));// ��������ȥ��ƫ����
+            currentHolder.adjustScroll((int) (header.getHeight() + ViewHelper.getTranslationY(header)));
         }
     }
 
@@ -98,7 +100,6 @@ public class MainActivity extends FragmentActivity implements OnPageChangeListen
 
     private int headerTop = 0;
 
-    // ˢ��ͷ����ʾʱ��û��onScroll�ص���ֻ�е�ˢ��ʱ����
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount,
                          int pagePosition) {
@@ -114,29 +115,22 @@ public class MainActivity extends FragmentActivity implements OnPageChangeListen
         if (NEED_RELAYOUT) {
             headerTop = scrollY;
             header.post(new Runnable() {
-
                 @Override
                 public void run() {
-                    Log.e("Main", "scorry1=" + headerTop);
                     header.layout(0, headerTop, header.getWidth(), headerTop + header.getHeight());
                 }
             });
         } else {
             ViewHelper.setTranslationY(header, scrollY);
+            if (scrollY < -400) {
+                relativeLayout.setAlpha(1.0f);
+            } else {
+                relativeLayout.setAlpha(0.1f);
+            }
         }
     }
 
-    /**
-     * ��Ҫ�������⣬PullToRefreshListView������һ��ˢ��ͷ�������Ҫ���ݲ�ͬ��������㵱ǰ��ƫ����</br>
-     * <p>
-     * ��ˢ��ʱ�� ˢ��ͷ����ʾ�����ƫ����Ҫ����ˢ��ͷ����ֵ δˢ��ʱ�� ƫ����������ͷ����
-     * <p>
-     * firstVisiblePosition >1ʱ��listview�е��ʼ��ʾ��������Ϊÿһ��ȸ�������ƫ��������ʵֻҪ��ʾһ�������ƫ��
-     * ���Ѿ�����ͷ�������ƫ��������˲�׼ȷҲû�й�ϵ��
-     *
-     * @param view
-     * @return
-     */
+
     public int getScrollY(AbsListView view) {
         View c = view.getChildAt(0);
         if (c == null) {
@@ -153,7 +147,6 @@ public class MainActivity extends FragmentActivity implements OnPageChangeListen
         }
     }
 
-    // ��onHeadScroll���⣬����ͬʱִ��
     @Override
     public void onHeaderScroll(boolean isRefreashing, int value, int pagePosition) {
         if (viewPager.getCurrentItem() != pagePosition) {
